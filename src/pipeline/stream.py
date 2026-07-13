@@ -1,29 +1,29 @@
 import asyncio
 import logging
 from faststream import FastStream
-from faststream.broker.core.mixins import StreamMessage
-from faststream.rabbit import InMemoryBroker
-from src.generator.simulator import generate_telemetry, TelemetryPayload
-from src.model.detector import TelemetryAnomalyDetector
+from faststream.rabbit import RabbitBroker, TestRabbitBroker # Native localized stream architecture
 
 # Set up logging architecture
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("TelemetryPipeline")
 
-# Initialize event broker, streaming application, and our ML model
-broker = InMemoryBroker()
+# Initialize the production-ready RabbitBroker
+broker = RabbitBroker()
 app = FastStream(broker)
-detector = TelemetryAnomalyDetector(contamination=0.05)
 
+
+from src.generator.simulator import generate_telemetry, TelemetryPayload
+from src.model.detector import TelemetryAnomalyDetector
+
+detector = TelemetryAnomalyDetector(contamination=0.05)
 TELEMETRY_QUEUE = "vehicle.telemetry.raw"
 
 @broker.subscriber(TELEMETRY_QUEUE)
-async def process_telemetry_event(payload: TelemetryPayload, msg: StreamMessage) -> None:
+async def process_telemetry_event(payload: TelemetryPayload) -> None:
     """
     Asynchronously consumes vehicle events and passes them through the 
     Isolation Forest engine for real-time inference.
     """
-    # Run the stream payload through our unsupervised ML model
     is_anomaly = detector.predict_anomaly(payload)
     
     if is_anomaly:
@@ -38,7 +38,6 @@ async def process_telemetry_event(payload: TelemetryPayload, msg: StreamMessage)
             f"Speed: {payload.velocity:.1f} km/h | Temp: {payload.battery_temp:.1f}°C"
         )
 
-
 async def simulate_fleet_stream(fleet_size: int = 3, run_duration_seconds: int = 10):
     """Asynchronously streams data from the fleet into the messaging queue."""
     devices = [f"AV-FLEET-{i:03d}" for i in range(1, fleet_size + 1)]
@@ -47,18 +46,17 @@ async def simulate_fleet_stream(fleet_size: int = 3, run_duration_seconds: int =
     start_time = asyncio.get_event_loop().time()
     while asyncio.get_event_loop().time() - start_time < run_duration_seconds:
         for device_id in devices:
-            # Generate and publish telemetry packets
-            payload = generate_telemetry(device_id=device_id)
+            # Generate metrics and randomly inject anomaly frames based on current time
+            inject_anomaly = (asyncio.get_event_loop().time() % 4 < 0.5)
+            payload = generate_telemetry(device_id=device_id, inject_anomaly=inject_anomaly)
             await broker.publish(payload, queue=TELEMETRY_QUEUE)
             
         await asyncio.sleep(0.8)
 
-
-@app.after_startup
-async def initialize_and_run():
+async def initialize_and_run_local():
     """
-    Triggers automatically when FastStream starts. Simulates a historical cold-start 
-    to train the ML model baseline before actively streaming data.
+    Simulates a historical cold-start to train the ML model baseline 
+    and handles the async runtime loops under a virtualized local broker context.
     """
     logger.info("[SYSTEM] Initializing pipeline warm-up phase...")
     
@@ -72,5 +70,6 @@ async def initialize_and_run():
     detector.fit_baseline(historical_data)
     logger.info("[ML ENGINE] Model training complete. Streaming system is live.")
     
-    # 3. Spin up the real-time simulation fleet
-    await simulate_fleet_stream(fleet_size=3, run_duration_seconds=12)
+    # 3. Spin up the real-time simulation fleet inside the virtual broker context
+    async with TestRabbitBroker(broker):
+        await simulate_fleet_stream(fleet_size=3, run_duration_seconds=12)

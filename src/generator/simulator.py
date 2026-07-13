@@ -1,14 +1,14 @@
 import random
 import time
 from datetime import datetime
-from pydantic import BaseModel, Feild
+from pydantic import BaseModel, Field
 
 class TelemetryPayload(BaseModel):
-    device_id: str = Feild(..., description= "Unique identifier for the vehicle")
-    timestamp: str = Feild(..., description= "ISO tumestamp of telemetry generation")
-    velocity: float = Feild(..., description= "Speed in km/h")
-    battery_temp: float = Feild(..., description = "Core battery temperature in Celsius")
-    brake_pressure: float = Feild(..., description = "Hydrolic brake psi")
+    device_id: str = Field(..., description= "Unique identifier for the vehicle")
+    timestamp: str = Field(..., description= "ISO tumestamp of telemetry generation")
+    velocity: float = Field(..., description= "Speed in km/h")
+    battery_temp: float = Field(..., description = "Core battery temperature in Celsius")
+    brake_pressure: float = Field(..., description = "Hydrolic brake psi")
     gps_lat: float
     gps_lon: float
 
