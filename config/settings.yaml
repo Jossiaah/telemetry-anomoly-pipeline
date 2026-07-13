@@ -1,0 +1,12 @@
+simulation:
+  fleet_size: 5
+  interval_seconds: 0.5
+  anomaly_rate: 0.05 # 5% chance to inject an artificial anomaly
+
+model:
+  contamination: 0.01 # expected proportion of outliers
+  random_state: 42
+
+streaming:
+  host: "localhost"
+  queue_name: "vehicle_telemetry"

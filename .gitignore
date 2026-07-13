@@ -1,0 +1,18 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments
+.venv/
+venv/
+ENV/
+
+# Configuration and State
+.env
+.pytest_cache/
+.DS_Store
+
+# Streamlit/Model run logs
+*.log
+src/model/saved_models/
