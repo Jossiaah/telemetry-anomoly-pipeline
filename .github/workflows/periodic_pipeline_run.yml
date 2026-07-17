@@ -1,0 +1,51 @@
+name: Periodic Telemetry Pipeline Diagnostics
+
+on:
+  schedule:
+    # Triggers the workflow every 6 hours (At minute 0 of hours 0, 6, 12, 18)
+    - cron: '0 */6 * * *'
+  workflow_dispatch: # Allows you to also trigger this manually with a button click on GitHub
+
+jobs:
+  run-diagnostics:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out repository code
+      uses: actions/checkout@v4
+
+    - name: Set up Python Environment
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+        cache: 'pip'
+
+    - name: Install Project Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Run Pipeline Integrity and Model Tests
+      env:
+        PYTHONPATH: .  # 🚀 Teaches the cloud machine where your src folder lives!
+      run: |
+        # This will execute your unit tests to verify the pipeline logic isn't broken
+        pytest tests/
+
+    - name: Generate Simulation Health Snapshot
+      env:
+        PYTHONPATH: .
+      run: |
+        # Verifies the entry point launcher script boots up cleanly
+        python run_pipeline.py
+        echo "Pipeline run completed successfully on $(date)" >> pipeline_heartbeat.log
+
+    - name: Commit and Push Heartbeat Log
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "41898282+github-actions[bot]@://github.com"
+        git add pipeline_heartbeat.log
+        
+        # Only commit and push if there are actual structural updates or new logs to register
+        git diff-index --quiet HEAD || git commit -m "chore: automated telemetry cron heartbeat [skip ci]"
+        git push
