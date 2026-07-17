@@ -36,9 +36,9 @@ jobs:
       env:
         PYTHONPATH: .
       run: |
-        # Verifies the entry point launcher script boots up cleanly
         python run_pipeline.py
         echo "Pipeline run completed successfully on $(date)" >> pipeline_heartbeat.log
+
 
         - name: Commit and Push Heartbeat Log
           run: |
