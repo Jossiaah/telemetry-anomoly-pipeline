@@ -43,7 +43,7 @@ jobs:
     - name: Commit and Push Heartbeat Log
       run: |
         git config --global user.name "github-actions[bot]"
-        git config --global user.email "41898282+github-actions[bot]@://github.com"
+        git config --global user.email "41898282+github-actions[bot]@:user.norelpy.github.com"
         git add pipeline_heartbeat.log
         
         # Only commit and push if there are actual structural updates or new logs to register
