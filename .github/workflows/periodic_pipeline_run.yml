@@ -2,9 +2,8 @@ name: Periodic Telemetry Pipeline Diagnostics
 
 on:
   schedule:
-    # Triggers the workflow every 6 hours (At minute 0 of hours 0, 6, 12, 18)
     - cron: '0 */6 * * *'
-  workflow_dispatch: # Allows you to also trigger this manually with a button click on GitHub
+  workflow_dispatch:
 
 jobs:
   run-diagnostics:
@@ -27,9 +26,8 @@ jobs:
 
     - name: Run Pipeline Integrity and Model Tests
       env:
-        PYTHONPATH: .  # 🚀 Teaches the cloud machine where your src folder lives!
+        PYTHONPATH: .
       run: |
-        # This will execute your unit tests to verify the pipeline logic isn't broken
         pytest tests/
 
     - name: Generate Simulation Health Snapshot
@@ -39,15 +37,10 @@ jobs:
         python run_pipeline.py
         echo "Pipeline run completed successfully on $(date)" >> pipeline_heartbeat.log
 
-
-        - name: Commit and Push Heartbeat Log
-          run: |
-            git config --global user.name "github-actions[bot]"
-            git config --global user.email "41898282+github-actions[bot]@://github.com"
-        
-            # Add the -f flag here to override the .gitignore rule safely
-            git add -f pipeline_heartbeat.log
-        
-            git diff-index --quiet HEAD || git commit -m "chore: automated telemetry cron heartbeat [skip ci]"
-            git push
-
+    - name: Commit and Push Heartbeat Log
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git add -f pipeline_heartbeat.log
+        git diff-index --quiet HEAD || git commit -m "chore: automated telemetry cron heartbeat [skip ci]"
+        git push
