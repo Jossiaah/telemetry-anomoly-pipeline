@@ -40,12 +40,14 @@ jobs:
         python run_pipeline.py
         echo "Pipeline run completed successfully on $(date)" >> pipeline_heartbeat.log
 
-    - name: Commit and Push Heartbeat Log
-      run: |
-        git config --global user.name "github-actions[bot]"
-        git config --global user.email "41898282+github-actions[bot]@:user.norelpy.github.com"
-        git add pipeline_heartbeat.log
+        - name: Commit and Push Heartbeat Log
+          run: |
+            git config --global user.name "github-actions[bot]"
+            git config --global user.email "41898282+github-actions[bot]@://github.com"
         
-        # Only commit and push if there are actual structural updates or new logs to register
-        git diff-index --quiet HEAD || git commit -m "chore: automated telemetry cron heartbeat [skip ci]"
-        git push
+            # Add the -f flag here to override the .gitignore rule safely
+            git add -f pipeline_heartbeat.log
+        
+            git diff-index --quiet HEAD || git commit -m "chore: automated telemetry cron heartbeat [skip ci]"
+            git push
+
