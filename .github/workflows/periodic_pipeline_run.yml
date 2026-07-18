@@ -38,11 +38,14 @@ jobs:
         echo "Pipeline run completed successfully on $(date)" >> pipeline_heartbeat.log
 
     - name: Commit and Push Heartbeat Log
+      env:
+        # 🚀 We pass your personal token into a secure environment variable
+        GRID_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
       run: |
         git config --global user.name "Jossiaah"
         git config --global user.email "josiahcastillo19@gmail.com"
         git add -f pipeline_heartbeat.log
         
-        # Authenticates the push using your secure secret token to light up the contribution grid
+        # Cleanly injects the environment token variable right into the git call
         git diff-index --quiet HEAD || git commit -m "chore: automated telemetry cron heartbeat [skip ci]"
-        git push https://Jossiaah:${{ secrets.MY_GITHUB_TOKEN }}@://github.com main
+        git push https://Jossiaah:${GRID_TOKEN}@://github.com main
