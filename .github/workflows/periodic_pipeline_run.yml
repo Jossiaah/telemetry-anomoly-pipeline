@@ -39,8 +39,10 @@ jobs:
 
     - name: Commit and Push Heartbeat Log
       run: |
-        git config --global user.name "github-actions[bot]"
-        git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git config --global user.name "Jossiaah"
+        git config --global user.email "josiahcastillo19@gmail.com"
         git add -f pipeline_heartbeat.log
+        
+        # Authenticates the push using your secure secret token to light up the contribution grid
         git diff-index --quiet HEAD || git commit -m "chore: automated telemetry cron heartbeat [skip ci]"
-        git push
+        git push https://Jossiaah:${{ secrets.MY_GITHUB_TOKEN }}@://github.com main
