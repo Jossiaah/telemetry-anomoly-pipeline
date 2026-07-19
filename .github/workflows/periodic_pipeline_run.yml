@@ -48,4 +48,4 @@ jobs:
         
         # Cleanly injects the environment token variable right into the git call
         git diff-index --quiet HEAD || git commit -m "chore: automated telemetry cron heartbeat [skip ci]"
-        git push https://Jossiaah:${GRID_TOKEN}@://github.com/telemetry-anomoly-pipeline main
+        git push https://Jossiaah:${GRID_TOKEN}@github.com/jossiaah/telemetry-anomoly-pipeline main
